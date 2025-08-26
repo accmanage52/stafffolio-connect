@@ -155,6 +155,7 @@ const AdminDashboard = () => {
       const { error } = await supabase.from('profiles').insert([
         {
           id: crypto.randomUUID(),
+          user_id: crypto.randomUUID(),
           full_name: formData.fullName,
           role: 'staff',
         },
