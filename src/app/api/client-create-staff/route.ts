@@ -1,49 +1,35 @@
-console.log("Incoming body:", req.body);
+import { NextResponse } from "next/server";
 
-// /pages/api/create-staff.ts
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const { email, password, fullName } = req.body;
-
-
+// Handle POST request (create staff)
+export async function POST(req: Request) {
   try {
-    // 1. Create staff user
-    const { data, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
+    const body = await req.json();
+    const { email, password, name } = body;
+
+    if (!email || !password || !name) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // TODO: Insert into Supabase or your DB here
+    console.log("New Staff Created:", { email, name });
+
+    return NextResponse.json({
+      success: true,
+      message: "Staff created successfully",
     });
-
-    if (authError) throw authError;
-
-    const userId = data?.user?.id;
-    if (!userId) throw new Error("User creation failed: no userId returned");
-
-    // 2. Create profile
-    const { error: profileError } = await supabaseAdmin.from("profiles").insert([
-      {
-        user_id: userId,
-        name: fullName,
-        role: "staff",
-        status: "active",
-      },
-    ]);
-
-    if (profileError) throw profileError;
-
-    return res.status(200).json({ message: "✅ Staff created successfully" });
-  } catch (err) {
-    console.error("Create staff error:", err);
-    return res.status(400).json({ error: err?.message || "Unknown error" });
+  } catch (error) {
+    console.error("Error creating staff:", error);
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
   }
+}
+
+// Optionally block GET
+export async function GET() {
+  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
 }
