@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -31,10 +31,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Users,
   CreditCard,
@@ -42,13 +42,13 @@ import {
   Building2,
   TrendingUp,
   AlertTriangle,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface Profile {
   id: string;
   user_id: string;
   full_name: string;
-  role: 'admin' | 'staff';
+  role: "admin" | "staff";
   created_at: string;
 }
 
@@ -60,7 +60,7 @@ interface BankDetail {
   acc_number: string;
   mobile_number: string;
   merchant_name: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   freeze_reason?: string;
   freeze_balance: number;
   created_at: string;
@@ -73,29 +73,29 @@ const AdminDashboard = () => {
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
-  const [selectedStaffId, setSelectedStaffId] = useState<string>('all');
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("all");
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    fullName: '',
+    email: "",
+    password: "",
+    fullName: "",
   });
 
   /** Fetch staff */
   const fetchStaff = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'staff')
-        .order('created_at', { ascending: false });
+        .from("profiles")
+        .select("*")
+        .eq("role", "staff")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setStaff(data || []);
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
   const fetchAllBankDetails = async () => {
     try {
       let query = supabase
-        .from('bank_details')
+        .from("bank_details")
         .select(
           `
           *,
@@ -117,10 +117,10 @@ const AdminDashboard = () => {
           )
         `
         )
-        .order('created_at', { ascending: false });
+        .order("created_at", { ascending: false });
 
-      if (selectedStaffId !== 'all') {
-        query = query.eq('staff_id', selectedStaffId);
+      if (selectedStaffId !== "all") {
+        query = query.eq("staff_id", selectedStaffId);
       }
 
       const { data, error } = await query;
@@ -129,9 +129,9 @@ const AdminDashboard = () => {
       setBankDetails(data || []);
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
@@ -146,36 +146,40 @@ const AdminDashboard = () => {
     loadData();
   }, [selectedStaffId]);
 
-  /** Create staff */
+  /** Create staff via API */
   const handleCreateStaff = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.from('profiles').insert([
-        {
-          id: crypto.randomUUID(),
-          user_id: crypto.randomUUID(),
-          full_name: formData.fullName,
-          role: 'staff',
-        },
-      ]);
+      const staffData = {
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+      };
 
-      if (error) throw error;
+      const res = await fetch("/api/client-create-staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(staffData),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
 
       toast({
-        title: 'Success',
-        description: 'Staff member added successfully.',
+        title: "✅ Success",
+        description: "Staff member added successfully.",
       });
 
       setIsStaffDialogOpen(false);
-      setFormData({ email: '', password: '', fullName: '' });
-      fetchStaff();
+      setFormData({ email: "", password: "", fullName: "" });
+      fetchStaff(); // refresh staff list
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "❌ Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -184,7 +188,7 @@ const AdminDashboard = () => {
 
   /** Helpers */
   const getStatusBadge = (status: string) =>
-    status === 'active' ? (
+    status === "active" ? (
       <Badge className="bg-success text-success-foreground">Active</Badge>
     ) : (
       <Badge variant="destructive">Inactive</Badge>
@@ -192,10 +196,10 @@ const AdminDashboard = () => {
 
   const getMerchantDisplay = (merchant: string) => {
     const merchants = {
-      googlepay: 'Google Pay',
-      bharatpe: 'BharatPe',
-      pinelab: 'Pine Labs',
-      axis: 'Axis',
+      googlepay: "Google Pay",
+      bharatpe: "BharatPe",
+      pinelab: "Pine Labs",
+      axis: "Axis",
     };
     return merchants[merchant as keyof typeof merchants] || merchant;
   };
@@ -205,19 +209,19 @@ const AdminDashboard = () => {
 
   const getActiveTotalBalance = () =>
     bankDetails
-      .filter((detail) => detail.status === 'active')
+      .filter((detail) => detail.status === "active")
       .reduce((sum, detail) => sum + detail.freeze_balance, 0);
 
   const getInactiveTotalBalance = () =>
     bankDetails
-      .filter((detail) => detail.status === 'inactive')
+      .filter((detail) => detail.status === "inactive")
       .reduce((sum, detail) => sum + detail.freeze_balance, 0);
 
   const getActiveAccountsCount = () =>
-    bankDetails.filter((detail) => detail.status === 'active').length;
+    bankDetails.filter((detail) => detail.status === "active").length;
 
   const getInactiveAccountsCount = () =>
-    bankDetails.filter((detail) => detail.status === 'inactive').length;
+    bankDetails.filter((detail) => detail.status === "inactive").length;
 
   return (
     <div className="space-y-6">
@@ -285,7 +289,7 @@ const AdminDashboard = () => {
 
               <div className="flex gap-2 pt-4">
                 <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? 'Creating...' : 'Create Staff'}
+                  {loading ? "Creating..." : "Create Staff"}
                 </Button>
                 <Button
                   type="button"
