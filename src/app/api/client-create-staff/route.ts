@@ -1,51 +1,25 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextRequest, NextResponse } from "next/server";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Example: in-memory store (replace with Supabase or DB)
+const staffDB: any[] = [];
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { email, password, name } = await req.json();
+    const body = await req.json();
+    const { name, email, password, role } = body;
 
-    // 1. Create staff user in Supabase Auth
-    const { data: user, error: authError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-      });
+    if (!name || !email || !password || !role) {
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
 
-    if (authError) throw authError;
+    // Here, you would insert into your DB (Supabase example)
+    // await supabase.from("users").insert({ name, email, password, role });
 
-    // 2. Add to profiles table
-    const { error: profileError } = await supabaseAdmin.from("profiles").insert([
-      {
-        user_id: user.user.id,
-        full_name: name,
-        role: "staff",
-        status: "active",
-      },
-    ]);
+    staffDB.push({ name, email, password, role, createdAt: new Date() });
 
-    if (profileError) throw profileError;
-
-    return NextResponse.json(
-      { message: "✅ Staff created successfully" },
-      { status: 200 }
-    );
-  } catch (err: any) {
-    console.error(err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ success: true, message: "Staff created!" });
+  } catch (error) {
+    console.error("Error creating staff:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
-
-// Block GET to avoid confusion
-export async function GET() {
-  return NextResponse.json(
-    { error: "Method Not Allowed" },
-    { status: 405 }
-  );
 }
