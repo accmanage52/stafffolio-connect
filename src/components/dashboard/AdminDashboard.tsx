@@ -1,25 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, CardContent, CardDescription, CardHeader, CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  Users, CreditCard, UserPlus, Building2, TrendingUp, AlertTriangle 
+import {
+  Users,
+  CreditCard,
+  UserPlus,
+  Building2,
+  TrendingUp,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface Profile {
@@ -83,7 +105,8 @@ const AdminDashboard = () => {
     try {
       let query = supabase
         .from('bank_details')
-        .select(`
+        .select(
+          `
           *,
           profiles:staff_id (
             id,
@@ -92,7 +115,8 @@ const AdminDashboard = () => {
             role,
             created_at
           )
-        `)
+        `
+        )
         .order('created_at', { ascending: false });
 
       if (selectedStaffId !== 'all') {
@@ -128,21 +152,20 @@ const AdminDashboard = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        user_metadata: {
+      const { error } = await supabase.from('profiles').insert([
+        {
+          id: crypto.randomUUID(),
           full_name: formData.fullName,
           role: 'staff',
+          status: 'active',
         },
-        email_confirm: true,
-      });
+      ]);
 
       if (error) throw error;
 
       toast({
         title: 'Success',
-        description: 'Staff member created successfully.',
+        description: 'Staff member added successfully.',
       });
 
       setIsStaffDialogOpen(false);
@@ -160,13 +183,12 @@ const AdminDashboard = () => {
   };
 
   /** Helpers */
-  const getStatusBadge = (status: string) => {
-    return status === 'active' ? (
+  const getStatusBadge = (status: string) =>
+    status === 'active' ? (
       <Badge className="bg-success text-success-foreground">Active</Badge>
     ) : (
       <Badge variant="destructive">Inactive</Badge>
     );
-  };
 
   const getMerchantDisplay = (merchant: string) => {
     const merchants = {
@@ -202,7 +224,9 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Admin Dashboard</h2>
+          <h2 className="text-2xl font-bold text-foreground">
+            Admin Dashboard
+          </h2>
           <p className="text-muted-foreground">
             Manage staff and monitor all banking operations
           </p>
