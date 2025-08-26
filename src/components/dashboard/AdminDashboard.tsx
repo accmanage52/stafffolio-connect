@@ -107,15 +107,15 @@ const AdminDashboard = () => {
         .from("bank_details")
         .select(
           `
-            *,
-            profiles:staff_id (
-              id,
-              user_id,
-              full_name,
-              role,
-              created_at
-            )
-          `
+          *,
+          profiles:staff_id (
+            id,
+            user_id,
+            full_name,
+            role,
+            created_at
+          )
+        `
         )
         .order("created_at", { ascending: false });
 
@@ -147,45 +147,52 @@ const AdminDashboard = () => {
   }, [selectedStaffId]);
 
   /** Create staff via API */
-  const handleCreateStaff = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  /** Create staff via API */
+const handleCreateStaff = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const staffData = {
-        name: formData.fullName,
-        email: formData.email,
-        password: formData.password,
-        role: "staff",
-      };
+  try {
+    // Match the backend API expected fields
+    const staffData = {
+      name: formData.fullName,
+      email: formData.email,
+      password: formData.password,
+      role: "staff", // optional: if your backend expects role
+    };
 
-      const res = await fetch("/api/client-create-staff", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(staffData),
-      });
+    const res = await fetch("/api/client-create-staff", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(staffData),
+    });
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed to create staff");
+    const result = await res.json();
 
-      toast({
-        title: "✅ Success",
-        description: "Staff member added successfully.",
-      });
+    if (!res.ok) throw new Error(result.error || "Failed to create staff");
 
-      setFormData({ email: "", password: "", fullName: "" });
-      setIsStaffDialogOpen(false);
-      fetchStaff();
-    } catch (error: any) {
-      toast({
-        title: "❌ Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    toast({
+      title: "✅ Success",
+      description: "Staff member added successfully.",
+    });
+
+    // Reset form and close dialog
+    setFormData({ email: "", password: "", fullName: "" });
+    setIsStaffDialogOpen(false);
+
+    // Refresh staff list
+    fetchStaff();
+  } catch (error: any) {
+    toast({
+      title: "❌ Error",
+      description: error.message,
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   /** Helpers */
   const getStatusBadge = (status: string) =>
@@ -229,7 +236,9 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Admin Dashboard</h2>
+          <h2 className="text-2xl font-bold text-foreground">
+            Admin Dashboard
+          </h2>
           <p className="text-muted-foreground">
             Manage staff and monitor all banking operations
           </p>
@@ -304,9 +313,83 @@ const AdminDashboard = () => {
         </Dialog>
       </div>
 
-      {/* Statistics Cards */}
+            {/* Statistics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {/* ...cards code unchanged for brevity */}
+        {/* Total Staff */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{staff.length}</div>
+            <p className="text-xs text-muted-foreground">Active staff members</p>
+          </CardContent>
+        </Card>
+
+        {/* Total Balance */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{getTotalBalance().toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">Across all accounts</p>
+          </CardContent>
+        </Card>
+
+        {/* Active Accounts Balance */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Accounts Balance</CardTitle>
+            <CreditCard className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ₹{getActiveTotalBalance().toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground">From active accounts</p>
+          </CardContent>
+        </Card>
+
+        {/* Inactive Accounts Balance */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Inactive Accounts Balance</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ₹{getInactiveTotalBalance().toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground">From inactive accounts</p>
+          </CardContent>
+        </Card>
+
+        {/* Active Accounts Count */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Accounts</CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
+            <p className="text-xs text-muted-foreground">Currently active</p>
+          </CardContent>
+        </Card>
+
+        {/* Inactive Accounts Count */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Inactive Accounts</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{getInactiveAccountsCount()}</div>
+            <p className="text-xs text-muted-foreground">Needs attention</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tabs */}
@@ -318,12 +401,161 @@ const AdminDashboard = () => {
 
         {/* Bank Details Tab */}
         <TabsContent value="bank-details" className="space-y-4">
-          {/* ...bank details table code */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                All Bank Details
+              </CardTitle>
+              <CardDescription>
+                Monitor all staff banking information and accounts
+              </CardDescription>
+              <div className="flex items-center gap-4">
+                <Label htmlFor="staff-filter">Filter by Staff:</Label>
+                <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Staff</SelectItem>
+                    {staff.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading bank details...</p>
+                </div>
+              ) : bankDetails.length === 0 ? (
+                <div className="text-center py-8">
+                  <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    No bank details found for the selected criteria.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Staff Member</TableHead>
+                        <TableHead>Account Holder</TableHead>
+                        <TableHead>Bank</TableHead>
+                        <TableHead>Account Number</TableHead>
+                        <TableHead>Mobile</TableHead>
+                        <TableHead>Merchant</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Balance</TableHead>
+                        <TableHead>Created</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {bankDetails.map((detail) => (
+                        <TableRow key={detail.id}>
+                          <TableCell className="font-medium">
+                            {detail.profiles.full_name}
+                          </TableCell>
+                          <TableCell>{detail.ac_holder_name}</TableCell>
+                          <TableCell>{detail.bank_name}</TableCell>
+                          <TableCell className="font-mono">{detail.acc_number}</TableCell>
+                          <TableCell>{detail.mobile_number}</TableCell>
+                          <TableCell>
+                            {getMerchantDisplay(detail.merchant_name)}
+                          </TableCell>
+                          <TableCell>{getStatusBadge(detail.status)}</TableCell>
+                          <TableCell className="font-mono">
+                            ₹{detail.freeze_balance.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(detail.created_at).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Staff Tab */}
         <TabsContent value="staff" className="space-y-4">
-          {/* ...staff table code */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Staff Members
+              </CardTitle>
+              <CardDescription>
+                Manage your team and their access permissions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading staff...</p>
+                </div>
+              ) : staff.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    No staff members found. Add your first staff member to get
+                    started.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Full Name</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Bank Accounts</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {staff.map((member) => {
+                        const memberBankAccounts = bankDetails.filter(
+                          (detail) => detail.staff_id === member.id
+                        ).length;
+
+                        return (
+                          <TableRow key={member.id}>
+                            <TableCell className="font-medium">
+                              {member.full_name}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="capitalize">
+                                {member.role}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(member.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">
+                                {memberBankAccounts} accounts
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
