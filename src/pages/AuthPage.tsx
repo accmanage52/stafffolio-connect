@@ -94,7 +94,7 @@ const AuthPage = () => {
         <Card className="border shadow-lg">
           <CardHeader className="text-center">
             <CardTitle>Access Portal</CardTitle>
-            <CardDescription>Sign in to your account or register</CardDescription>
+            <CardDescription>Sign in to your account</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
@@ -103,11 +103,6 @@ const AuthPage = () => {
                   <Shield className="h-4 w-4" />
                   Sign In
                 </TabsTrigger>
-                <TabsTrigger value="signup" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Register
-                </TabsTrigger>
-              </TabsList>
 
               <TabsContent value="signin" className="space-y-4 mt-6">
                 <form onSubmit={handleSignIn} className="space-y-4">
@@ -133,56 +128,6 @@ const AuthPage = () => {
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? 'Signing in...' : 'Sign In'}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup" className="space-y-4 mt-6">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-fullname">Full Name</Label>
-                    <Input
-                      id="signup-fullname"
-                      name="fullName"
-                      type="text"
-                      placeholder="Enter your full name"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      name="password"
-                      type="password"
-                      placeholder="Create a password"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-role">Role</Label>
-                    <Select name="role" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="staff">Staff</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Creating account...' : 'Create Account'}
                   </Button>
                 </form>
               </TabsContent>
