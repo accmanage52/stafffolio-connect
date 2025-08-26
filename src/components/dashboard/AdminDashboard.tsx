@@ -155,7 +155,7 @@ const AdminDashboard = () => {
       const staffData = {
         email: formData.email,
         password: formData.password,
-        fullName: formData.fullName,
+        name: formData.fullName, // ✅ match API field
       };
 
       const res = await fetch("/api/client-create-staff", {
@@ -305,7 +305,7 @@ const AdminDashboard = () => {
         </Dialog>
       </div>
 
-      {/* Statistics Cards */}
+            {/* Statistics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {/* Total Staff */}
         <Card>
