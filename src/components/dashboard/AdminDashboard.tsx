@@ -157,7 +157,6 @@ const AdminDashboard = () => {
           id: crypto.randomUUID(),
           full_name: formData.fullName,
           role: 'staff',
-          status: 'active',
         },
       ]);
 
