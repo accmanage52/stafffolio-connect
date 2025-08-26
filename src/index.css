@@ -1,118 +1,63 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    /* Fintech Professional Colors */
-    --background: 248 250 252; /* slate-50 */
-    --foreground: 15 23 42; /* slate-800 */
+    /* Light Theme */
+    --background: 210 40% 98%;       /* slate-50 */
+    --foreground: 222 47% 11%;       /* slate-800 */
 
-    --card: 255 255 255; /* white */
-    --card-foreground: 15 23 42; /* slate-800 */
+    --card: 0 0% 100%;               /* white */
+    --card-foreground: 222 47% 11%;  /* slate-800 */
 
-    --popover: 255 255 255; /* white */
-    --popover-foreground: 15 23 42; /* slate-800 */
+    --popover: 0 0% 100%;            /* white */
+    --popover-foreground: 222 47% 11%;
 
-    /* Professional Blue Primary */
-    --primary: 219 78% 25%; /* Fintech blue */
-    --primary-foreground: 248 250 252; /* slate-50 */
+    --primary: 224 76% 48%;          /* fintech blue */
+    --primary-foreground: 0 0% 100%; /* white */
 
-    --secondary: 241 245 249; /* slate-100 */
-    --secondary-foreground: 30 41 59; /* slate-700 */
+    --secondary: 220 14% 96%;        /* slate-100 */
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 248 250 252; /* slate-50 */
-    --muted-foreground: 100 116 139; /* slate-500 */
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%; /* slate-500 */
 
-    --accent: 219 78% 25%; /* Primary blue accent */
-    --accent-foreground: 248 250 252; /* slate-50 */
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84% 60%; /* red-500 */
-    --destructive-foreground: 248 250 252; /* slate-50 */
+    --destructive: 0 72% 51%;        /* red-600 */
+    --destructive-foreground: 0 0% 100%;
 
-    /* Status Colors */
-    --success: 142 76% 36%; /* green-600 */
-    --success-foreground: 248 250 252; /* slate-50 */
-    
-    --warning: 32 95% 44%; /* amber-500 */
-    --warning-foreground: 15 23 42; /* slate-800 */
-
-    --border: 226 232 240; /* slate-200 */
-    --input: 226 232 240; /* slate-200 */
-    --ring: 219 78% 25%; /* Primary blue */
-
-    --radius: 0.5rem;
-
-    /* Sidebar */
-    --sidebar-background: 255 255 255; /* white */
-    --sidebar-foreground: 30 41 59; /* slate-700 */
-    --sidebar-primary: 219 78% 25%; /* Primary blue */
-    --sidebar-primary-foreground: 248 250 252; /* slate-50 */
-    --sidebar-accent: 248 250 252; /* slate-50 */
-    --sidebar-accent-foreground: 30 41 59; /* slate-700 */
-    --sidebar-border: 226 232 240; /* slate-200 */
-    --sidebar-ring: 219 78% 25%; /* Primary blue */
+    --border: 220 14% 91%;           /* slate-200 */
+    --input: 220 14% 91%;
+    --ring: 224 76% 48%;             /* fintech blue */
   }
 
   .dark {
-    /* Dark Mode Fintech Colors */
-    --background: 15 23 42; /* slate-800 */
-    --foreground: 248 250 252; /* slate-50 */
+    /* Dark Theme */
+    --background: 222 47% 11%;       /* slate-900 */
+    --foreground: 210 40% 98%;       /* slate-50 */
 
-    --card: 30 41 59; /* slate-700 */
-    --card-foreground: 248 250 252; /* slate-50 */
+    --card: 222 47% 13%;             /* slate-800 */
+    --card-foreground: 210 40% 98%;
 
-    --popover: 30 41 59; /* slate-700 */
-    --popover-foreground: 248 250 252; /* slate-50 */
+    --popover: 222 47% 13%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 219 78% 25%; /* Primary blue */
-    --primary-foreground: 248 250 252; /* slate-50 */
+    --primary: 224 76% 48%;          /* fintech blue */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 51 65 85; /* slate-600 */
-    --secondary-foreground: 248 250 252; /* slate-50 */
+    --secondary: 222 47% 20%;        /* slate-700 */
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 51 65 85; /* slate-600 */
-    --muted-foreground: 148 163 184; /* slate-400 */
+    --muted: 222 47% 20%;
+    --muted-foreground: 215 20% 65%; /* slate-400 */
 
-    --accent: 219 78% 25%; /* Primary blue accent */
-    --accent-foreground: 248 250 252; /* slate-50 */
+    --accent: 222 47% 20%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84% 60%; /* red-500 */
-    --destructive-foreground: 248 250 252; /* slate-50 */
+    --destructive: 0 72% 51%;        /* red-600 */
+    --destructive-foreground: 0 0% 100%;
 
-    /* Status Colors - Dark Mode */
-    --success: 142 76% 36%; /* green-600 */
-    --success-foreground: 248 250 252; /* slate-50 */
-    
-    --warning: 32 95% 44%; /* amber-500 */
-    --warning-foreground: 15 23 42; /* slate-800 */
-
-    --border: 51 65 85; /* slate-600 */
-    --input: 51 65 85; /* slate-600 */
-    --ring: 219 78% 25%; /* Primary blue */
-
-    /* Sidebar - Dark Mode */
-    --sidebar-background: 30 41 59; /* slate-700 */
-    --sidebar-foreground: 203 213 225; /* slate-300 */
-    --sidebar-primary: 219 78% 25%; /* Primary blue */
-    --sidebar-primary-foreground: 248 250 252; /* slate-50 */
-    --sidebar-accent: 51 65 85; /* slate-600 */
-    --sidebar-accent-foreground: 203 213 225; /* slate-300 */
-    --sidebar-border: 51 65 85; /* slate-600 */
-    --sidebar-ring: 219 78% 25%; /* Primary blue */
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
+    --border: 222 47% 20%;           /* slate-700 */
+    --input: 222 47% 20%;
+    --ring: 224 76% 48%;
   }
 }
