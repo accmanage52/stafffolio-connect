@@ -13,7 +13,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { email, password, name } = req.body;
+  const { email, password, fullName } = req.body;
+
 
   try {
     // 1. Create staff user
@@ -32,7 +33,7 @@ export default async function handler(req, res) {
     const { error: profileError } = await supabaseAdmin.from("profiles").insert([
       {
         user_id: userId,
-        name,
+        name: fullName,
         role: "staff",
         status: "active",
       },
