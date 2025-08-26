@@ -1,3 +1,5 @@
+console.log("Incoming body:", req.body);
+
 // /pages/api/create-staff.ts
 import { createClient } from "@supabase/supabase-js";
 
