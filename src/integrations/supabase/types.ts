@@ -14,16 +14,100 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bank_details: {
+        Row: {
+          ac_holder_name: string
+          acc_number: string
+          bank_name: string
+          created_at: string | null
+          freeze_balance: number | null
+          freeze_reason: string | null
+          id: string
+          merchant_name: Database["public"]["Enums"]["merchant_type"]
+          mobile_number: string
+          staff_id: string
+          status: Database["public"]["Enums"]["status_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          ac_holder_name: string
+          acc_number: string
+          bank_name: string
+          created_at?: string | null
+          freeze_balance?: number | null
+          freeze_reason?: string | null
+          id?: string
+          merchant_name: Database["public"]["Enums"]["merchant_type"]
+          mobile_number: string
+          staff_id: string
+          status?: Database["public"]["Enums"]["status_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          ac_holder_name?: string
+          acc_number?: string
+          bank_name?: string
+          created_at?: string | null
+          freeze_balance?: number | null
+          freeze_reason?: string | null
+          id?: string
+          merchant_name?: Database["public"]["Enums"]["merchant_type"]
+          mobile_number?: string
+          staff_id?: string
+          status?: Database["public"]["Enums"]["status_type"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_details_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          full_name: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { user_uuid: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      merchant_type: "googlepay" | "bharatpe" | "pinelab" | "axis"
+      status_type: "active" | "inactive"
+      user_role: "admin" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +234,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      merchant_type: ["googlepay", "bharatpe", "pinelab", "axis"],
+      status_type: ["active", "inactive"],
+      user_role: ["admin", "staff"],
+    },
   },
 } as const
