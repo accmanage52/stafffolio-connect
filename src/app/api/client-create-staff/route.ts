@@ -1,35 +1,51 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-// Handle POST request (create staff)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { email, password, name } = body;
+    const { email, password, name } = await req.json();
 
-    if (!email || !password || !name) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+    // 1. Create staff user in Supabase Auth
+    const { data: user, error: authError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+      });
 
-    // TODO: Insert into Supabase or your DB here
-    console.log("New Staff Created:", { email, name });
+    if (authError) throw authError;
 
-    return NextResponse.json({
-      success: true,
-      message: "Staff created successfully",
-    });
-  } catch (error) {
-    console.error("Error creating staff:", error);
+    // 2. Add to profiles table
+    const { error: profileError } = await supabaseAdmin.from("profiles").insert([
+      {
+        user_id: user.user.id,
+        full_name: name,
+        role: "staff",
+        status: "active",
+      },
+    ]);
+
+    if (profileError) throw profileError;
+
     return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 }
+      { message: "✅ Staff created successfully" },
+      { status: 200 }
     );
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }
 
-// Optionally block GET
+// Block GET to avoid confusion
 export async function GET() {
-  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
+  return NextResponse.json(
+    { error: "Method Not Allowed" },
+    { status: 405 }
+  );
 }
