@@ -73,20 +73,26 @@ const AdminDashboard = () => {
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
+  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const [selectedStaffId, setSelectedStaffId] = useState<string>("all");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     fullName: "",
   });
+  const [adminFormData, setAdminFormData] = useState({
+    email: "",
+    password: "",
+    fullName: "",
+  });
 
-  /** Fetch staff */
+  /** Fetch all users (admin and staff) */
   const fetchStaff = async () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("role", "staff")
+        .in("role", ["admin", "staff"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -186,6 +192,46 @@ const handleCreateStaff = async (e: React.FormEvent) => {
   }
 };
 
+  /** Create admin via edge function */
+  const handleCreateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-admin', {
+        body: {
+          email: adminFormData.email,
+          password: adminFormData.password,
+          fullName: adminFormData.fullName,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.error) throw new Error(data.error);
+
+      toast({
+        title: "✅ Success",
+        description: "Admin user added successfully.",
+      });
+
+      // Reset form and close dialog
+      setAdminFormData({ email: "", password: "", fullName: "" });
+      setIsAdminDialogOpen(false);
+
+      // Refresh staff list to show new admin
+      fetchStaff();
+    } catch (error: any) {
+      toast({
+        title: "❌ Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   /** Helpers */
   const getStatusBadge = (status: string) =>
@@ -237,14 +283,15 @@ const handleCreateStaff = async (e: React.FormEvent) => {
           </p>
         </div>
 
-        {/* Add Staff Dialog */}
-        <Dialog open={isStaffDialogOpen} onOpenChange={setIsStaffDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Staff
-            </Button>
-          </DialogTrigger>
+        {/* Add Staff and Admin Dialogs */}
+        <div className="flex gap-2">
+          <Dialog open={isStaffDialogOpen} onOpenChange={setIsStaffDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Staff
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Add New Staff Member</DialogTitle>
@@ -304,19 +351,87 @@ const handleCreateStaff = async (e: React.FormEvent) => {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Admin
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add New Admin User</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateAdmin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="adminFullName">Full Name</Label>
+                <Input
+                  id="adminFullName"
+                  value={adminFormData.fullName}
+                  onChange={(e) =>
+                    setAdminFormData({ ...adminFormData, fullName: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="adminEmail">Email</Label>
+                <Input
+                  id="adminEmail"
+                  type="email"
+                  value={adminFormData.email}
+                  onChange={(e) =>
+                    setAdminFormData({ ...adminFormData, email: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="adminPassword">Password</Label>
+                <Input
+                  id="adminPassword"
+                  type="password"
+                  value={adminFormData.password}
+                  onChange={(e) =>
+                    setAdminFormData({ ...adminFormData, password: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button type="submit" disabled={loading} className="flex-1">
+                  {loading ? "Creating..." : "Create Admin"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsAdminDialogOpen(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+        </div>
       </div>
 
-            {/* Statistics Cards */}
+      {/* Statistics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {/* Total Staff */}
+        {/* Total Users */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{staff.length}</div>
-            <p className="text-xs text-muted-foreground">Active staff members</p>
+            <p className="text-xs text-muted-foreground">Admin & staff members</p>
           </CardContent>
         </Card>
 
@@ -389,7 +504,7 @@ const handleCreateStaff = async (e: React.FormEvent) => {
       <Tabs defaultValue="bank-details" className="space-y-4">
         <TabsList>
           <TabsTrigger value="bank-details">Bank Details</TabsTrigger>
-          <TabsTrigger value="staff">Staff Management</TabsTrigger>
+          <TabsTrigger value="staff">User Management</TabsTrigger>
         </TabsList>
 
         {/* Bank Details Tab */}
@@ -483,29 +598,29 @@ const handleCreateStaff = async (e: React.FormEvent) => {
           </Card>
         </TabsContent>
 
-        {/* Staff Tab */}
+        {/* User Management Tab */}
         <TabsContent value="staff" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Staff Members
+                All Users
               </CardTitle>
               <CardDescription>
-                Manage your team and their access permissions
+                Manage admin and staff accounts
               </CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <div className="text-center py-8">
                   <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading staff...</p>
+                  <p className="text-muted-foreground">Loading users...</p>
                 </div>
               ) : staff.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    No staff members found. Add your first staff member to get
+                    No users found. Add your first team member to get
                     started.
                   </p>
                 </div>
