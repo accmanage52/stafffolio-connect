@@ -34,7 +34,8 @@ serve(async (req) => {
       password,
       email_confirm: true,
       user_metadata: {
-        full_name: fullName
+        full_name: fullName,
+        role: 'staff'
       }
     });
 
@@ -54,24 +55,23 @@ serve(async (req) => {
       );
     }
 
-    // Create profile
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .insert([
-        {
-          user_id: userId,
-          full_name: fullName,
-          role: 'staff',
-        },
-      ]);
+    // Wait a moment for the trigger to create the profile
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-    if (profileError) {
-      console.error('Profile error:', profileError);
-      // Try to clean up the created user
+    // Verify the profile was created with correct role
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('Profile verification error:', profileError);
+      // Clean up the created user
       await supabaseAdmin.auth.admin.deleteUser(userId);
       return new Response(
-        JSON.stringify({ error: profileError.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Profile creation failed' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
