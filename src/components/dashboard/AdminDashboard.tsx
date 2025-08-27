@@ -146,30 +146,39 @@ const AdminDashboard = () => {
     loadData();
   }, [selectedStaffId]);
 
-  /** Create staff via API */
-  /** Create staff via API */
+  /** Create staff via Supabase */
 const handleCreateStaff = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
 
   try {
-    // Match the backend API expected fields
-    const staffData = {
-      name: formData.fullName,
+    // Create user with Supabase admin
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: formData.email,
       password: formData.password,
-      role: "staff", // optional: if your backend expects role
-    };
-
-    const res = await fetch("/api/client-create-staff", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(staffData),
+      email_confirm: true,
+      user_metadata: {
+        full_name: formData.fullName
+      }
     });
 
-    const result = await res.json();
+    if (authError) throw authError;
 
-    if (!res.ok) throw new Error(result.error || "Failed to create staff");
+    const userId = authData?.user?.id;
+    if (!userId) throw new Error("User creation failed: no userId returned");
+
+    // Create profile
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .insert([
+        {
+          user_id: userId,
+          full_name: formData.fullName,
+          role: "staff",
+        },
+      ]);
+
+    if (profileError) throw profileError;
 
     toast({
       title: "✅ Success",
@@ -452,6 +461,7 @@ const handleCreateStaff = async (e: React.FormEvent) => {
                         <TableHead>Mobile</TableHead>
                         <TableHead>Merchant</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Freeze Reason</TableHead>
                         <TableHead>Balance</TableHead>
                         <TableHead>Created</TableHead>
                       </TableRow>
@@ -470,6 +480,9 @@ const handleCreateStaff = async (e: React.FormEvent) => {
                             {getMerchantDisplay(detail.merchant_name)}
                           </TableCell>
                           <TableCell>{getStatusBadge(detail.status)}</TableCell>
+                          <TableCell>
+                            {detail.freeze_reason || '-'}
+                          </TableCell>
                           <TableCell className="font-mono">
                             ₹{detail.freeze_balance.toFixed(2)}
                           </TableCell>
