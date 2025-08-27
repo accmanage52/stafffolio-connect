@@ -146,39 +146,23 @@ const AdminDashboard = () => {
     loadData();
   }, [selectedStaffId]);
 
-  /** Create staff via Supabase */
+  /** Create staff via edge function */
 const handleCreateStaff = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
 
   try {
-    // Create user with Supabase admin
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: formData.email,
-      password: formData.password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: formData.fullName
-      }
+    const { data, error } = await supabase.functions.invoke('create-staff', {
+      body: {
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+      },
     });
 
-    if (authError) throw authError;
+    if (error) throw error;
 
-    const userId = authData?.user?.id;
-    if (!userId) throw new Error("User creation failed: no userId returned");
-
-    // Create profile
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .insert([
-        {
-          user_id: userId,
-          full_name: formData.fullName,
-          role: "staff",
-        },
-      ]);
-
-    if (profileError) throw profileError;
+    if (data.error) throw new Error(data.error);
 
     toast({
       title: "✅ Success",

@@ -99,6 +99,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_staff_user: {
+        Args: { email: string; full_name: string; password: string }
+        Returns: Json
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
